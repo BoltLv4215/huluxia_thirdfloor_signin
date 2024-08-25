@@ -24,6 +24,7 @@
    - 点击`New repository secret`，添加名为`WECHAT_ROBOT_URL`的Secret，值为你企业微信群机器人的URL。
    - 点击`New repository secret`，添加名为`ACCOUNTS`的Secret，值为你的账号信息，格式如下：
      ```
+     [手机号][英文逗号][密码]
      account1,password1
      account2,password2
      ```
@@ -52,15 +53,19 @@
              run: |
                pip install --upgrade pip
                pip install -r ./requirements.txt
+           - name: '设置环境变量'
+             run: |
+               echo "WECHAT_ROBOT_URL=${{ secrets.WECHAT_ROBOT_URL }}" >> $GITHUB_ENV
+               echo "ACCOUNTS=${{ secrets.ACCOUNTS }}" >> $GITHUB_ENV
            - name: '开始运行'
              id: signin-outputs
-             env:
-               WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
-               ACCOUNTS: ${{ secrets.ACCOUNTS }}
              run: |
                python ./main.py
      ```
 
+4. **运行Github Actions**：
+   - 设置好的 schedule 将会每日自动执行签到任务。
+   - 你也可以随时进入 `Actions` 页面，选择 `huluxia_signin` workflow，然后点击 `Run workflow` 手动触发签到任务。
 
 ### 消息推送方式
 
