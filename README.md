@@ -28,16 +28,39 @@
      account2,password2
      ```
 
-3. **配置```main.yml```**：
-   - 在```main.yml```中引用Github Secrets，例如：
+3. **在Github Actions中创建```main.yml```**：
+   - 进入你的仓库，点击`Actions`。
+   - 点击`New workflow`，选择`Set up a workflow yourself`。
+   - 将以下内容粘贴到 `main.yml` 文件中：
      ```yaml
-     env:
-       WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
-       ACCOUNTS: ${{ secrets.ACCOUNTS }}
+     name: huluxia_signin
+     on:
+       schedule:    # 定时触发
+         - cron: '0 16 * * *'  # 24点
+       workflow_dispatch:  # 支持手动触发
+     jobs:
+       build:
+         runs-on: ubuntu-latest
+         steps:
+           - name: Checkout
+             uses: actions/checkout@v3
+           - name: '初始化python环境'
+             uses: actions/setup-python@v4
+             with:
+                python-version: 3.10.11
+           - name: '安装依赖'
+             run: |
+               pip install --upgrade pip
+               pip install -r ./requirements.txt
+           - name: '开始运行'
+             id: signin-outputs
+             env:
+               WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
+               ACCOUNTS: ${{ secrets.ACCOUNTS }}
+             run: |
+               python ./main.py
      ```
 
-4. **更新```main.py```**：
-   - 在```main.py```中读取 `ACCOUNTS` 环境变量，并解析账号信息。
 
 ### 消息推送方式
 
