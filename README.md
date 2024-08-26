@@ -22,9 +22,9 @@
    - 进入你的仓库，点击`Settings`。
    - 选择`Secrets and variables` -> `Actions`。
    - 点击`New repository secret`，添加名为`WECHAT_ROBOT_URL`的Secret，值为你企业微信群机器人的URL。
-   - 点击`New repository secret`，添加名为`ACCOUNTS`的Secret，值为你的账号信息，格式如下：
+   - 点击`New repository secret`，添加名为`ACCOUNTS`的Secret，值为你的账号信息，格式如下：<br/>
+   [手机号][英文逗号][密码]
      ```
-     [手机号][英文逗号][密码]
      account1,password1
      account2,password2
      ```
