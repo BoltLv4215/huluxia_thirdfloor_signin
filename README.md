@@ -29,39 +29,42 @@
      account2,password2
      ```
 
-3. **在Github Actions中创建```main.yml```**：
-   - 进入你的仓库，点击`Actions`。
-   - 点击`New workflow`，选择`Set up a workflow yourself`。
-   - 将以下内容粘贴到 `main.yml` 文件中：
-     ```yaml
-     name: huluxia_signin
-     on:
-       schedule:    # 定时触发
-         - cron: '0 16 * * *'  # 24点
-       workflow_dispatch:  # 支持手动触发
-     jobs:
-       build:
-         runs-on: ubuntu-latest
-         steps:
-           - name: Checkout
-             uses: actions/checkout@v3
-           - name: '初始化python环境'
-             uses: actions/setup-python@v4
-             with:
-                python-version: 3.10.11
-           - name: '安装依赖'
-             run: |
-               pip install --upgrade pip
-               pip install -r ./requirements.txt
-           - name: '设置环境变量'
-             run: |
-               echo "WECHAT_ROBOT_URL=${{ secrets.WECHAT_ROBOT_URL }}" >> $GITHUB_ENV
-               echo "ACCOUNTS=${{ secrets.ACCOUNTS }}" >> $GITHUB_ENV
-           - name: '开始运行'
-             id: signin-outputs
-             run: |
-               python ./main.py
-     ```
+     3. **在Github Actions中创建```main.yml```**：
+        - 进入你的仓库，点击`Actions`。
+        - 点击`New workflow`，选择`Set up a workflow yourself`。
+        - 将以下内容粘贴到 `main.yml` 文件中：
+          ```yaml
+          name: huluxia_signin
+          on:
+            schedule:    # 定时触发
+              - cron: '0 16 * * *'  # 24点
+            workflow_dispatch:  # 支持手动触发
+          jobs:
+            build:
+              runs-on: ubuntu-latest
+              steps:
+                - name: Checkout
+                  uses: actions/checkout@v3
+                - name: '初始化python环境'
+                  uses: actions/setup-python@v4
+                  with:
+                     python-version: 3.10.11
+                - name: '安装依赖'
+                  run: |
+                    pip install --upgrade pip
+                    pip install -r ./requirements.txt
+                - name: '设置环境变量'
+                  run: |
+                    echo "WECHAT_ROBOT_URL=${{ secrets.WECHAT_ROBOT_URL }}" >> $GITHUB_ENV
+                    echo "ACCOUNTS=${{ secrets.ACCOUNTS }}" >> $GITHUB_ENV
+                - name: '开始运行'
+                  id: signin-outputs
+                  env:
+                    WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
+                    ACCOUNTS: ${{ secrets.ACCOUNTS }}
+                  run: |
+                    python ./main.py
+          ```
 
 4. **运行Github Actions**：
    - 设置好的 schedule 将会每日自动执行签到任务。
@@ -82,4 +85,4 @@
 <br/>
 
 **🚩By [BoltLv4215](https://github.com/BoltLv4215 "点个Star和Follow吧！")**<br/>
-###### **最后编辑于2024年8月25日**
+###### **最后编辑于2024年8月28日**
