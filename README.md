@@ -48,10 +48,6 @@
              run: |
                pip install --upgrade pip
                pip install -r ./requirements.txt
-           - name: '检查环境变量'
-             run: |
-               echo "WECHAT_ROBOT_URL=${{ secrets.WECHAT_ROBOT_URL }}" >> $GITHUB_ENV
-               echo "ACCOUNTS=${{ secrets.ACCOUNTS }}" >> $GITHUB_ENV
            - name: '开始运行'
              id: signin-outputs
              env:
@@ -78,6 +74,8 @@
 本项目仅供学习和交流使用，请勿用于任何商业用途。使用者需自行承担因使用本项目而产生的任何风险和责任。
 
 <br/>
+
+[![Stargazers over time](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin.svg?variant=adaptive)](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin)
 
 **🚩By [BoltLv4215](https://github.com/BoltLv4215 "点个Star和Follow吧！")**<br/>
 ###### **最后编辑于2024年9月7日**
