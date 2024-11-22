@@ -16,8 +16,8 @@ jobs:
       - name: Update last update date
         run: |
           # 获取当前日期
-          CURRENT_DATE=$(date +"%Y年%m月%d日")
-          
+          CURRENT_DATE=$(date +"%Y年%m月%d日 %H点%M分")
+
           # 替换 README.md 中的日期
           sed -i "s/###### \*\*最后更新日期.*\*\*/###### \*\*最后更新日期：$CURRENT_DATE\*\*/" README.md
 
@@ -28,6 +28,4 @@ jobs:
           git add README.md
           git commit -m "自动更新最后更新日期" || echo "无更改"
           git push origin master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
