@@ -1,5 +1,7 @@
 # 葫芦侠三楼每日自动签到 🚀
 
+###### **最后更新日期：2024年9月7日**
+
 > **💯42个版块精准签到**
 > 
 > **🗂️多账号支持**
@@ -80,4 +82,4 @@
 [![Stargazers over time](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin.svg?variant=adaptive)](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin)
 
 **🚩By [BoltLv4215](https://github.com/BoltLv4215 "点个Star和Follow吧！")**<br/>
-###### **最后编辑于2024年9月7日**
+
