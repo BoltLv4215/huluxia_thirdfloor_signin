@@ -16,8 +16,8 @@ jobs:
       - name: Update last update date
         run: |
           # 获取当前日期
-          CURRENT_DATE=$(date +"%Y年%m月%d日 %H点%M分")
-
+          CURRENT_DATE=$(date -u +"%Y年%m月%d日 %H点%M分" --date='8 hours')
+          
           # 替换 README.md 中的日期
           sed -i "s/###### \*\*最后更新日期.*\*\*/###### \*\*最后更新日期：$CURRENT_DATE\*\*/" README.md
 
