@@ -67,7 +67,7 @@
 
 ### 消息推送方式 📢
 
-目前仅支持**企业微信群机器人推送**。如果你有其他推送需求或希望增加其他推送方式（如邮件、Telegram等），欢迎提交PR或提出Issue。
+目前仅支持**企业微信群机器人推送**。如果你有其他推送需求或希望增加其他推送方式（如邮件、Telegram等），欢迎提交PR或提出Issue。如果不想使用推送，可以查看这篇issue, [查看这里](https://github.com/BoltLv4215/huluxia_thirdfloor_signin/issues/1)。
 
 ### 效果图 📸
 
