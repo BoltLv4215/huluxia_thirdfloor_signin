@@ -27,4 +27,4 @@ jobs:
           git config --local user.email "github-actions@github.com"
           git add README.md
           git commit -m "自动更新最后更新日期" || echo "无更改"
-          git push
+          git push https://$PERSONAL_ACCESS_TOKEN@github.com/BoltLv4215/huluxia_thirdfloor_signin.git HEAD:master
