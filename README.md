@@ -77,9 +77,7 @@
 
 本项目仅供学习和交流使用，请勿用于任何商业用途。使用者需自行承担因使用本项目而产生的任何风险和责任。
 
-<br/>
 
-[![Stargazers over time](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin.svg?variant=adaptive)](https://starchart.cc/BoltLv4215/huluxia_thirdfloor_signin)
-
+[![Star History Chart](https://api.star-history.com/svg?repos=BoltLv4215/huluxia_thirdfloor_signin&type=Date)](https://star-history.com/#BoltLv4215/huluxia_thirdfloor_signin&Date)
 **🚩By [BoltLv4215](https://github.com/BoltLv4215 "点个Star和Follow吧！")**<br/>
 
