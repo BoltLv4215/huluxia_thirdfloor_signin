@@ -3,7 +3,6 @@ from signin import HuluxiaSignin
 import os
 from logger import logger
 
-
 # 检查环境变量
 accounts_str = os.getenv('ACCOUNTS')
 if not accounts_str:

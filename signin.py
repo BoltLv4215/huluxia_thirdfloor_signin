@@ -49,6 +49,7 @@ class HuluxiaSignin:
         self.userid = ''
         self.signin_continue_days = ''
 
+
         # 初始化通知器类型
         notifier_type = os.getenv("NOTIFIER_TYPE", "none")  # 可选：wechat(企业微信机器人）、email(邮箱推送)、none(不发送通知)
         config = {
@@ -186,8 +187,20 @@ class HuluxiaSignin:
         self.set_config(acc, psd)
         info = self.user_info()
         initial_msg = f'正在为{info[0]}签到\n等级：Lv.{info[1]}\n经验值：{info[2]}/{info[3]}'
-        self.notifier.send(initial_msg)
         logger.info(initial_msg)
+
+        # 获取通知类型
+        notifier_type = os.getenv("NOTIFIER_TYPE")
+        print("通知类型：", notifier_type)
+
+        # 判断通知类型，微信即时发送，邮箱聚合消息
+        if notifier_type == "wechat":  # 如果是微信通知，立即发送
+            self.notifier.send(initial_msg)
+            all_messages = []  # 微信即时发送，清空聚合消息
+        elif notifier_type == "email":  # 如果是邮箱通知，聚合消息
+            all_messages = [initial_msg]
+        else:  # 不发送通知
+            all_messages = []
 
         total_exp = 0  # 记录总共获取的经验值
 
@@ -206,14 +219,20 @@ class HuluxiaSignin:
                 signin_res = session.post(url=signin_url, headers=headers, data=post_data).json()
             except Exception as e:
                 error_msg = f"签到过程中出现错误：{e}"
-                self.notifier.send(error_msg)
+                if notifier_type == "wechat":
+                    self.notifier.send(error_msg)  # 微信即时发送
+                elif notifier_type == "email":
+                    all_messages.append(error_msg)  # 聚合消息（邮箱通知）
                 logger.error(error_msg)
                 break
 
             # 处理签到结果
             if signin_res.get('status') == 0:
                 fail_msg = f'【{cat_id_dict[self.cat_id]}】签到失败，请手动签到。'
-                self.notifier.send(fail_msg)
+                if notifier_type == "wechat":
+                    self.notifier.send(fail_msg)  # 微信即时发送
+                elif notifier_type == "email":
+                    all_messages.append(fail_msg)  # 聚合消息（邮箱通知）
                 logger.warning(fail_msg)
                 time.sleep(3)
                 continue
@@ -222,14 +241,20 @@ class HuluxiaSignin:
             signin_exp = signin_res.get('experienceVal', 0)
             self.signin_continue_days = signin_res.get('continueDays', 0)
             success_msg = f'【{cat_id_dict[self.cat_id]}】签到成功，经验值 +{signin_exp}'
-            # self.notifier.send(success_msg)
+            if notifier_type == "wechat":
+                self.notifier.send(success_msg)  # 微信即时发送
+            elif notifier_type == "email":
+                all_messages.append(success_msg)  # 聚合消息（邮箱通知）
             logger.info(success_msg)
             total_exp += signin_exp
             time.sleep(3)
 
         # 汇总签到结果
         summary_msg = f'本次为{info[0]}签到共获得：{total_exp} 经验值'
-        self.notifier.send(summary_msg)
+        if notifier_type == "wechat":
+            self.notifier.send(summary_msg)  # 微信即时发送
+        elif notifier_type == "email":
+            all_messages.append(summary_msg)  # 聚合消息（邮箱通知）
         logger.info(summary_msg)
 
         # 完成签到后的用户信息
@@ -237,5 +262,13 @@ class HuluxiaSignin:
         final_msg = f'已为{final_info[0]}完成签到\n等级：Lv.{final_info[1]}\n经验值：{final_info[2]}/{final_info[3]}\n已连续签到 {self.signin_continue_days} 天\n'
         remaining_days = (int(final_info[3]) - int(final_info[2])) // total_exp + 1 if total_exp else "未知"
         final_msg += f'还需签到 {remaining_days} 天'
-        self.notifier.send(final_msg)
+        if notifier_type == "wechat":
+            self.notifier.send(final_msg)  # 微信即时发送
+        elif notifier_type == "email":
+            all_messages.append(final_msg)  # 聚合消息（邮箱通知）
         logger.info(final_msg)
+
+        # 如果是邮箱通知，发送聚合后的所有消息
+        if notifier_type == "email" and all_messages:
+            self.notifier.send("\n\n".join(all_messages))
+

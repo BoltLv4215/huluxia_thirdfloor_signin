@@ -88,7 +88,13 @@ class EmailNotifier(Notifier):
         except Exception as e:
             raise RuntimeError(f"邮件通知失败：{e}")
 
-
+class NoOpNotifier(Notifier):
+    """
+    无操作通知器，用于忽略通知请求
+    """
+    def send(self, message: str):
+        # 不执行任何操作
+        print(f"通知被忽略：{message}")
 
 
 # 工厂函数：根据通知方式返回相应的通知器实例
@@ -110,11 +116,14 @@ def get_notifier(method: str, config: dict) -> Notifier:
             sender_email=config.get("sender_email"),
             recipient_email=config.get("recipient_email")
         )
+    elif method == 'none':
+        return NoOpNotifier()
     else:
         raise ValueError(f"不支持的通知方式：{method}")
 
 # 示例代码，用于测试通知器
 if __name__ == "__main__":
+    # 环境变量配置
     # 示例配置
     notifier_type = os.getenv("NOTIFIER_TYPE", "email")  # 默认为 'none'
     config = {
