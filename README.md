@@ -54,7 +54,10 @@
            - name: '开始运行'
              id: signin-outputs
              env:
-               WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
+               # 不需要的推送形式可以直接注释，反之你需要取消注释            
+               NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }} 
+               # EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
+               # WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
                ACCOUNTS: ${{ secrets.ACCOUNTS }}
              run: |
                python ./main.py
