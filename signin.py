@@ -5,12 +5,13 @@ import random
 import time
 import requests
 from logger import logger
+from notifier import get_notifier
 
 # 随机配置
 phone_brand_type_list = list(["MI", "Huawei", "UN", "OPPO", "VO"])  # 随机设备厂商
 device_code_random = random.randint(111, 987)  # 随机设备识别码
 
-# 配置
+# 静态配置
 platform = '2'
 gkey = '000000'
 app_version = '4.3.1.5.2'
@@ -35,24 +36,6 @@ with open('cat_id.json', 'r', encoding='UTF-8') as f:
     content = f.read()
     cat_id_dict = json.loads(content)
 
-
-# 企业微信群机器人 推送
-def text_push(msg):
-    text_url = os.getenv('WECHAT_ROBOT_URL')
-    if not text_url:
-        raise ValueError("环境变量 WECHAT_ROBOT_URL 未设置")
-    text_data = {
-        "msgtype": "markdown",
-        "markdown": {
-            "content": msg,
-            "mentioned_list": ["@all"],
-            "mentioned_mobile_list": ["@all"]
-        }
-    }
-    requests.post(url=text_url, json=text_data)
-
-
-
 class HuluxiaSignin:
     """
     葫芦侠三楼签到类
@@ -65,6 +48,33 @@ class HuluxiaSignin:
         self.cat_id = ''
         self.userid = ''
         self.signin_continue_days = ''
+
+        # 初始化通知器类型
+        notifier_type = os.getenv("NOTIFIER_TYPE", "none")  # 可选：wechat(企业微信机器人）、email(邮箱推送)、none(不发送通知)
+        config = {
+            "webhook_url": os.getenv("WECHAT_ROBOT_URL"),  # 企业微信机器人 Webhook 地址
+            "smtp_server": "smtp.qq.com",  # SMTP 服务器地址 默认QQ邮箱
+            "port": 465  # SMTP 端口号
+        }
+        if notifier_type == "email":
+            # 从环境变量获取邮箱配置
+            email_config_str = os.getenv("EMAIL_CONFIG")
+            if email_config_str:
+                try:
+                    email_config = json.loads(email_config_str)
+                    config.update({
+                        "username": email_config.get("username"),
+                        "auth_code_or_password": email_config.get("auth_code_or_password"),
+                        "sender_email": email_config.get("sender_email"),
+                        "recipient_email": email_config.get("recipient_email")
+                    })
+                except json.JSONDecodeError:
+                    print("邮箱配置格式错误，请检查 EMAIL_CONFIG 的值。")
+                    raise
+            else:
+                print("没有配置 EMAIL_CONFIG 环境变量，请设置邮箱相关配置。")
+                raise ValueError("缺少邮箱配置")
+        self.notifier = get_notifier(notifier_type, config)
 
     # 手机号密码登录
     def psd_login(self, account, password):
@@ -104,7 +114,7 @@ class HuluxiaSignin:
         data = self.psd_login(acc, psd)
         status = data['status']
         if status == 0:
-            text_push("手机号或密码错误!")
+            self.notifier.send("手机号或密码错误!")
         else:
             self._key = data['_key']
             self.userid = data['user']['userID']
@@ -172,80 +182,60 @@ class HuluxiaSignin:
         :param psd: 密码
         :return: 签到结果
         """
-        msg_result: str = ''  # 消息聚合
+        # 初始化通知信息
         self.set_config(acc, psd)
         info = self.user_info()
-        msg_1 = f'正在为<font color="warning">**{info[0]}**</font>签到\n'
-        msg1 = f'> 等级：Lv.{info[1]}\n' \
-               f'> 经验值：<font color="info">{info[2]}</font>/{info[3]}\n'
-        logger.info(msg_1)
-        logger.info(msg1)
-        msg_1 += msg1
-        text_push(msg_1)
-        time.sleep(1)
-        # text_push(msg1)
-        # msg_result += msg_1
-        exp_get = 0  # 经验值
+        initial_msg = f'正在为{info[0]}签到\n等级：Lv.{info[1]}\n经验值：{info[2]}/{info[3]}'
+        self.notifier.send(initial_msg)
+        logger.info(initial_msg)
+
+        total_exp = 0  # 记录总共获取的经验值
+
+        # 循环签到每个版块
         for ct in cat_id_dict.keys():
             self.cat_id = ct
             sign = self.sign_get().upper()
-            signin_url = 'http://floor.huluxia.com/user/signin/ANDROID/4.1.8?' \
-                         'platform=' + platform + \
-                         '&gkey=' + gkey + \
-                         '&app_version=' + app_version + \
-                         '&versioncode=' + versioncode + \
-                         '&market_id=' + market_id + \
-                         '&_key=' + self._key + \
-                         '&device_code=' + device_code + \
-                         '&phone_brand_type=' + phone_brand_type + \
-                         '&cat_id=' + self.cat_id + \
-                         '&time=' + str(self.timestamp())
-            post_data = {
-                'sign': sign
-            }
-            signin_res = session.post(url=signin_url, headers=headers, data=post_data)
+            signin_url = (
+                f"http://floor.huluxia.com/user/signin/ANDROID/4.1.8?"
+                f"platform={platform}&gkey={gkey}&app_version={app_version}&versioncode={versioncode}"
+                f"&market_id={market_id}&_key={self._key}&device_code={device_code}"
+                f"&phone_brand_type={phone_brand_type}&cat_id={self.cat_id}&time={self.timestamp()}"
+            )
+            post_data = {"sign": sign}
             try:
-                signin_res = signin_res.json()
-            except Exception:
-                msg_2 = '<font color="warning">**出现错误！终止签到**</font>'
-                # msg_result += msg_2
-                text_push(msg_2)
-                logger.info(msg_2)
+                signin_res = session.post(url=signin_url, headers=headers, data=post_data).json()
+            except Exception as e:
+                error_msg = f"签到过程中出现错误：{e}"
+                self.notifier.send(error_msg)
+                logger.error(error_msg)
                 break
-            # print(signin_res)
-            signin_status = signin_res['status']
-            if signin_status == 0:
-                logger.info(signin_res)
-                message = f'【{cat_id_dict[self.cat_id]}】签到失败！请手动签到！'
-                logger.info(message)
-                text_push(message)
+
+            # 处理签到结果
+            if signin_res.get('status') == 0:
+                fail_msg = f'【{cat_id_dict[self.cat_id]}】签到失败，请手动签到。'
+                self.notifier.send(fail_msg)
+                logger.warning(fail_msg)
                 time.sleep(3)
                 continue
-            signin_exp = signin_res['experienceVal']
-            self.signin_continue_days = signin_res['continueDays']
-            msg_4 = f'【{cat_id_dict[self.cat_id]}】签到成功，经验+{signin_exp}\n\ncat_id:{self.cat_id}\n\n'
-            msg_result += msg_4
-            logger.info(msg_4)
-            # text_push(msg_4)
-            exp_get += signin_exp
+
+            # 签到成功，记录经验值
+            signin_exp = signin_res.get('experienceVal', 0)
+            self.signin_continue_days = signin_res.get('continueDays', 0)
+            success_msg = f'【{cat_id_dict[self.cat_id]}】签到成功，经验值 +{signin_exp}'
+            # self.notifier.send(success_msg)
+            logger.info(success_msg)
+            total_exp += signin_exp
             time.sleep(3)
-        msg_5 = f'本次签到共获得：{exp_get}经验值'
-        # msg_result += msg_5
-        logger.info(msg_5)
-        # text_push(msg_result)
-        text_push(msg_5)
-        # 完成签到
-        inf = self.user_info()
-        msg_6 = f'已为<font color="warning">**{inf[0]}**</font>完成签到\n'
-        # 经验值计算
-        sign_day = (int(inf[3]) - int(inf[2])) / int(exp_get) + 1
-        msg6 = f'> 等级：Lv.{inf[1]}\n' \
-               f'> 经验值：<font color="info">{inf[2]}</font>/{inf[3]}\n' \
-               f'> 已连续签到{self.signin_continue_days}天\n' \
-               f'> 还需签到<font color="warning">{int(sign_day)}</font>天'
-        logger.info(msg_6)
-        # text_push(msg_6)
-        msg_6 += msg6
-        logger.info(msg6)
-        time.sleep(1)
-        text_push(msg_6)
+
+        # 汇总签到结果
+        summary_msg = f'本次为{info[0]}签到共获得：{total_exp} 经验值'
+        self.notifier.send(summary_msg)
+        logger.info(summary_msg)
+
+        # 完成签到后的用户信息
+        final_info = self.user_info()
+        final_msg = f'已为{final_info[0]}完成签到\n等级：Lv.{final_info[1]}\n经验值：{final_info[2]}/{final_info[3]}\n已连续签到 {self.signin_continue_days} 天\n'
+        remaining_days = (int(final_info[3]) - int(final_info[2])) // total_exp + 1 if total_exp else "未知"
+        final_msg += f'还需签到 {remaining_days} 天'
+        self.notifier.send(final_msg)
+        logger.info(final_msg)

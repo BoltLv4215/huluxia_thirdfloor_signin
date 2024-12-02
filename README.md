@@ -1,16 +1,15 @@
 # 葫芦侠三楼每日自动签到 🚀
 
-###### **最后更新日期：2024年11月24日 14点29分**
-
 > **💯42个版块精准签到**
 > 
 > **🗂️多账号支持**
-> 
-> **📝企业微信群机器人推送**
+>
 > 
 > **🕗每日定时执行**
 > 
 > **❇️不影响葫芦侠使用**
+
+###### **最后更新日期：2024年11月24日 14点29分**
 
 ### 配置步骤 🛠️
 
@@ -20,7 +19,7 @@
 2. **设置Github Secrets**：
    - 进入你的仓库，点击`Settings`。
    - 选择`Secrets and variables` -> `Actions`。
-   - 点击`New repository secret`，添加名为`WECHAT_ROBOT_URL`的Secret，值为你[企业微信群机器人](https://open.work.weixin.qq.com/help2/pc/14931?person_id=1)的Webhook地址。
+   - 点击`New repository secret`，添加名为`NOTIFIER_TYPE`的Secret，值既为可选的推送方式：`wechat`(企业微信群机器人推送)、`email`(邮箱推送)和`none`(默认不推送签到消息）。详情请参考下方消息推送方式。
    - 点击`New repository secret`，添加名为`ACCOUNTS`的Secret，值为你的账号信息，格式如下：<br/>
    [手机号][英文逗号][密码]
      ```
@@ -67,11 +66,34 @@
 
 ### 消息推送方式 📢
 
-目前仅支持**企业微信群机器人推送**。如果你有其他推送需求或希望增加其他推送方式（如邮件、Telegram等），欢迎提交PR或提出Issue。如果不想使用推送，可以查看这篇issue, [查看这里](https://github.com/BoltLv4215/huluxia_thirdfloor_signin/issues/1#issuecomment-2466073364)。
+目前支持**企业微信群机器人推送**、**邮箱推送**和**不推送**三种方式。
+1. **企业微信群机器人推送**：
 
-### 效果图 📸
+   - 配置`WECHAT_ROBOT_URL`环境变量，值为企业微信群机器人的Webhook地址，具体获取方法请参考[企业微信群机器人文档](https://open.work.weixin.qq.com/help2/pc/14931?person_id=1)。
+   - 该推送方式需要在Github Secrets中设置`WECHAT_ROBOT_URL`变量。
 
-![企业微信群机器人自动推送效果图](src/screenshot.png)
+2. **邮箱推送**：
+
+   - 如果你希望通过邮箱进行推送，可以设置`EMAIL_CONFIG`环境变量，格式如下：
+     ```json
+     {
+         "username": "your_email@qq.com",
+         "auth_code_or_password": "your_email_auth_code",
+         "sender_email": "your_email@qq.com",
+         "recipient_email": "recipient_email@qq.com"
+     }
+     ```
+     配置完`EMAIL_CONFIG`后，程序将自动通过SMTP发送推送通知
+
+   - 如果你有其他推送需求或希望增加其他推送方式，欢迎提交PR或提出Issue。
+
+### 企业微信群机器人推送效果图 📸
+
+![企业微信群机器人推送效果图](src/wechat.png)
+
+### 邮箱推送效果图 📸
+![邮箱推送推送效果图](src/email.png)
+
 
 ### 使用声明 ⚠️
 
