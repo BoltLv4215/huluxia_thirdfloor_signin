@@ -79,28 +79,17 @@ class HuluxiaSignin:
 
     # 手机号密码登录
     def psd_login(self, account, password):
-        """
-        手机号密码登录
-
-        :param account: 手机号
-        :param password: 密码
-        :return: 登录结果
-        """
-        login_url = 'http://floor.huluxia.com/account/login/ANDROID/4.0?' \
-                    'platform=' + platform + \
-                    '&gkey=' + gkey + \
-                    '&app_version=' + app_version + \
-                    '&versioncode=' + versioncode + \
-                    '&market_id=' + market_id + \
-                    '&_key=&device_code=' + device_code + \
-                    '&phone_brand_type=' + phone_brand_type
-        login_data = {
-            'account': account,
-            'password': self.md5(password),
-            'login_type': 2
-        }
-        # print(login_data)
-        login_res = session.post(url=login_url, data=login_data, headers=headers)
+        device_model = f"iPhone{random.randint(14, 17)}%2C{random.randint(1, 6)}"
+        login_url = 'https://floor.huluxia.com/account/login/IOS/1.0?' \
+                    'access_token=&app_version=1.2.2&code=' \
+                    '&device_code=' + device_code + \
+                    '&device_model=' + device_model + \
+                    '&email=' + account + \
+                    '&market_id=floor_huluxia&openid=&' \
+                    'password=' + self.md5(password) + \
+                    '&phone=' \
+                    '&platform=1'
+        login_res = session.get(url=login_url, headers=headers)
         # print("账号登录信息：", login_res.content)
         return login_res.json()
 
