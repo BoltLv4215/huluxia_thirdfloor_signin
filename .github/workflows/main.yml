@@ -1,0 +1,29 @@
+name: huluxia_signin
+on:
+  schedule:    # 定时触发
+    - cron: '0 16 * * *'  # 24点
+  workflow_dispatch:  # 支持手动触发
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: '初始化python环境'
+        uses: actions/setup-python@v4
+        with:
+           python-version: 3.10.11
+      - name: '安装依赖'
+        run: |
+          pip install --upgrade pip
+          pip install -r ./requirements.txt
+      - name: '开始运行'
+        id: signin-outputs
+        env:
+          # 不需要的推送形式可以直接注释，反之你需要取消注释            
+          NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }} 
+          # EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
+          # WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
+          ACCOUNTS: ${{ secrets.ACCOUNTS }}
+        run: |
+          python ./main.py
