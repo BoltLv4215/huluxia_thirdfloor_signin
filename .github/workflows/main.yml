@@ -1,8 +1,8 @@
 name: huluxia_signin
 on:
-  schedule:    # 定时触发
+  schedule:
     - cron: '0 16 * * *'  # 24点
-  workflow_dispatch:  # 支持手动触发
+  workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -12,18 +12,35 @@ jobs:
       - name: '初始化python环境'
         uses: actions/setup-python@v4
         with:
-           python-version: 3.10.11
+          python-version: 3.10.11
       - name: '安装依赖'
         run: |
           pip install --upgrade pip
           pip install -r ./requirements.txt
-      - name: '开始运行'
+      - name: '开始运行（带重试）'
         id: signin-outputs
         env:
-          # 不需要的推送形式可以直接注释，反之你需要取消注释            
-          NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }} 
+          NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }}
           EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
-          # WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
           ACCOUNTS: ${{ secrets.ACCOUNTS }}
         run: |
-          python ./main.py
+          # 重试逻辑
+          max_retries=3
+          retry_delay=1200  # 1分钟 = 60秒
+          
+          for i in $(seq 1 $max_retries); do
+            echo "第 $i 次尝试运行..."
+            if python ./main.py; then
+              echo "运行成功！"
+              exit 0
+            else
+              echo "运行失败"
+              if [ $i -lt $max_retries ]; then
+                echo "等待 $retry_delay 秒后重试..."
+                sleep $retry_delay
+              else
+                echo "已达到最大重试次数 $max_retries"
+                exit 1
+              fi
+            fi
+          done
