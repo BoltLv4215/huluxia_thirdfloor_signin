@@ -45,11 +45,11 @@
          runs-on: ubuntu-latest
          steps:
            - name: Checkout
-             uses: actions/checkout@v3
+             uses: actions/checkout@v4
            - name: '初始化python环境'
-             uses: actions/setup-python@v4
+             uses: actions/setup-python@v5
              with:
-                python-version: 3.10.11
+                python-version: '3.10'
            - name: '安装依赖'
              run: |
                pip install --upgrade pip

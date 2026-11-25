@@ -16,8 +16,8 @@ from notifier import Notifier, get_notifier
 # ---------------------------------------------------------------------------
 PLATFORM = '2'
 GKEY = '000000'
-APP_VERSION = '4.3.1.5.2'
-VERSION_CODE = '398'
+APP_VERSION = '4.4.1.8'
+VERSION_CODE = '513'
 MARKET_ID = 'floor_web'
 SIGN_SECRET = 'fa1c28a5b62e79c3e63d9030b6142e4b'
 PHONE_BRAND_TYPES = ["MI", "Huawei", "UN", "OPPO", "VO"]

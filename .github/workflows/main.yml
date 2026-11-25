@@ -1,0 +1,45 @@
+name: huluxia_signin
+
+on:
+  schedule:
+    # UTC 16:00 = 北京时间 00:00（每天零点执行）
+    - cron: '0 16 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 初始化 Python 环境
+        uses: actions/setup-python@v5
+        with:
+          # 这里只写次要版本号 3.10，由 setup-python 自动挑选当前 runner
+          # 系统可用的最新 3.10.x（ubuntu-26.04 上是 3.10.22）。
+          # 不要写死 3.10.11：该补丁版没有 26.04 的预编译包，会直接报
+          # "The version '3.10.11' with architecture 'x64' was not found"。
+          python-version: '3.10'
+          cache: 'pip'
+
+      - name: 安装依赖
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r ./requirements.txt
+
+      - name: 开始运行
+        id: signin-outputs
+        env:
+          # 不需要的推送形式可以直接注释，反之你需要取消注释
+          NOTIFIER_TYPE: ${{ secrets.NOTIFIER_TYPE }}
+          # EMAIL_CONFIG: ${{ secrets.EMAIL_CONFIG }}
+          # WECHAT_ROBOT_URL: ${{ secrets.WECHAT_ROBOT_URL }}
+          ACCOUNTS: ${{ secrets.ACCOUNTS }}
+        run: |
+          python ./main.py
