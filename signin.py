@@ -30,6 +30,10 @@ DEFAULT_HEADERS = {
     "Host": "floor.huluxia.com",
 }
 
+# 单次请求超时（秒）。GitHub Actions 里网络偶发抖动时，没有超时会让任务
+# 一直挂到 workflow 的 timeout-minutes 才结束，白白烧掉一次执行。
+REQUEST_TIMEOUT = 15
+
 # 版块 ID 配置文件：相对本文件定位，避免从其他目录运行时找不到
 CAT_ID_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'cat_id.json')
 
@@ -113,7 +117,8 @@ class HuluxiaSignin:
             '&phone='
             '&platform=1'
         )
-        login_res = self.session.get(url=login_url, headers=DEFAULT_HEADERS)
+        login_res = self.session.get(url=login_url, headers=DEFAULT_HEADERS,
+                                     timeout=REQUEST_TIMEOUT)
         return login_res.json()
 
     def _login(self, account: str, password: str) -> None:
@@ -140,7 +145,8 @@ class HuluxiaSignin:
 
     def user_info(self) -> Dict[str, str]:
         """返回用户昵称、等级、当前经验与下一级所需经验。"""
-        data = requests.get(url=self._build_user_info_url(), headers=DEFAULT_HEADERS).json()
+        data = requests.get(url=self._build_user_info_url(), headers=DEFAULT_HEADERS,
+                            timeout=REQUEST_TIMEOUT).json()
         return {
             'nick': data['nick'],
             'level': data['level'],
@@ -209,6 +215,7 @@ class HuluxiaSignin:
                     url=self._build_signin_url(),
                     headers=DEFAULT_HEADERS,
                     data={"sign": self.sign_get().upper()},
+                    timeout=REQUEST_TIMEOUT,
                 ).json()
             except Exception as e:
                 self._emit(f"签到过程中出现错误：{e}", buffer, logging.ERROR)
